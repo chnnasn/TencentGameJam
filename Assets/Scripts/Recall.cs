@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using static PlayerTrail;
 public enum TimeState
 {
     Before,
@@ -88,6 +88,7 @@ public class Recall : MonoBehaviour
         MakingEnemy = true;
         while (true) {
             Debug.LogError("出现一个敌人");
+            isenemycome = true;
             yield return new WaitForSeconds(2f);
         }
     
