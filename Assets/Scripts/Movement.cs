@@ -1,17 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Movement : CheckPhysics
 {
     // Start is called before the first frame update
     Vector2 MoveMent;
-    bool CanMove = false;
+    [HideInInspector]
+    public bool CanMove = false;
+    Animator Animator;
+    SpriteRenderer sprite;
+
+    private void OnEnable()
+    {
+        sprite = gameObject.GetComponent<SpriteRenderer>();
+        Animator = gameObject.GetComponent<Animator>();
+        StartCoroutine(WaitForGrounded());
+    }
 
     new void Start()
     {
-
-        StartCoroutine(WaitForGrounded());
+       
     }
 
     IEnumerator WaitForGrounded()
@@ -22,9 +32,14 @@ public class Movement : CheckPhysics
             yield return null; // 每帧检查一次
         }
 
-        // 当jump状态变为Grounded时，触发相应行为
+        // 当jump状态变为Grounded时，等待按下任意键
+        while (!Input.anyKeyDown)
+        {
+            yield return null; // 每帧检查一次
+        }
+
+        // 当按下任意键时，触发相应行为
         CanMove = true;
-        yield break;
     }
 
     public float MoveSpeed;
@@ -32,25 +47,51 @@ public class Movement : CheckPhysics
     void Update()
     {
         // 正常获取输入并移动物体
-        if (CanMove && Recall.instance.timeState != TimeState.Recall) {
+        if (CanMove && Recall.instance.timeState != TimeState.Recall)
+        {
 
             MoveMent.x = Input.GetAxis("Horizontal");
 
-            transform.Translate(MoveMent * MoveSpeed * Time.deltaTime);
+            if (MoveMent.x != 0)
+            {
+                sprite.flipX = MoveMent.x < 0;
+
+                if (!IsAnimationPlaying("Jump")) {
+
+                    Animator.Play("Walk");
+                }
+
+
+                transform.Translate(MoveMent * MoveSpeed * Time.deltaTime);
+
+            }
+            else if(!IsAnimationPlaying("Jump"))
+            {
+                Animator.Play("Idie");
+            }
         }
 
-        // 按下空格键后，开始倒着移动
+        // 按下空格键后，开始跳
         if (jump == JumpState.Grounded && Input.GetKeyDown(KeyCode.Space))
         {
+            Animator.Play("Jump");
+
             base.PlayerJump();
         }
 
     }
 
+    bool IsAnimationPlaying(string name)
+    {
+        AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.IsName(name) && stateInfo.normalizedTime < 1.0f;
+    }
+
     private void FixedUpdate()
     {
-        if (Recall.instance.timeState != TimeState.Recall) {
-                base.UseGravity();
+        if (Recall.instance.timeState != TimeState.Recall)
+        {
+            base.UseGravity();
         }
     }
 
@@ -58,15 +99,23 @@ public class Movement : CheckPhysics
     {
         if (collision.transform.CompareTag("End"))
         {
-            if (Recall.instance.timeState != TimeState.After) {
+            if (Recall.instance.timeState != TimeState.After)
+            {
                 Recall.instance.timeState = TimeState.StartRecall;
             }
-            else {
-                Debug.LogWarning("胜利");
+            else
+            {
+                int h = SceneManager.GetActiveScene().buildIndex + 1;
+                if (h <= 8) {
+                    SceneManager.LoadScene(h);
+                }
+               
             }
-           
+        }
 
+        if (collision.transform.CompareTag("Enemy") && Recall.instance.timeState == TimeState.After)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
-
 }

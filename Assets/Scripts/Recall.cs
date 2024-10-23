@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static PlayerTrail;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
 public enum TimeState
 {
     Before,
@@ -15,51 +18,57 @@ public class Recall : MonoBehaviour
     public TimeState timeState;
     public Movement Player;
     private LineRenderer lineRenderer;
-    List<Vector3> points = new List<Vector3>();
+    [HideInInspector]
+    public List<Vector3> points = new List<Vector3>();
     public static Recall instance;
-    bool CanGetPo = false;
+    public GameObject Enemy;
+    Transform target; // 目标物体
+    public Queue<GameObject> queue = new Queue<GameObject>();
 
+    [HideInInspector]
+    public GameObject BG1;
+    [HideInInspector]
+    public ShakeCamera shakeCamera;
+    [HideInInspector]
+    public Volume volume;
+    [HideInInspector]
+    public Transform Mask;
 
-    private void Awake()
+    private void OnEnable()
     {
-        if (instance != null) 
+        if (instance != null)
         {
             Destroy(gameObject);
         }
-        else {
+        else
+        {
             instance = this;
         }
-    }
 
-    // Start is called before the first frame update
-    void Start()
-    {
+        target = GameObject.FindGameObjectWithTag("End").transform;
         timeState = TimeState.Before;
         lineRenderer = GetComponent<LineRenderer>();
+        points.Clear();
         if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0; // 初始化点的数量
         }
 
-        StartCoroutine(WaitForGrounded()) ;
-
     }
 
-    IEnumerator WaitForGrounded()
+    private void Awake()
     {
-        // 等待直到Player.jump状态变为JumpState.Grounded
-        while (Player.jump != JumpState.Grounded)
-        {
-            yield return null; // 每帧检查一次
-        }
-
-        // 当jump状态变为Grounded时，触发相应行为
-        UpdateLineRenderer();
-        CanGetPo = true;
-        yield break;
+        
     }
 
-    bool MakingEnemy = false;
+    // Start is called before the first frame update
+    void Start()
+    {
+       
+
+    }
+
+    //bool MakingEnemy = false;
 
     // Update is called once per frame
     void Update()
@@ -73,29 +82,25 @@ public class Recall : MonoBehaviour
             StartReversing();
         }
         // 检查物体是否在运动
-        if (timeState == TimeState.Before && CanGetPo && Player.jump != JumpState.Grounded)
+        if (timeState == TimeState.Before && Player.CanMove)
         {
             UpdateLineRenderer();
         }
 
-        if (timeState == TimeState.After && !MakingEnemy) {
-            StartCoroutine(MakeEnemy());
+        if (timeState == TimeState.After && queue.Count >0)
+        {
+            GameObject Enemy = queue.Dequeue();
+
+            StartCoroutine(MakeEnemy(Enemy));
         }
     }
 
-    IEnumerator MakeEnemy() {
+    IEnumerator MakeEnemy(GameObject Enemy )
+    {
+        yield return new WaitForSeconds(0.5f);
 
-        MakingEnemy = true;
-        while (true) {
-            Debug.LogError("出现一个敌人");
-            isenemycome = true;
-            yield return new WaitForSeconds(2f);
-        }
-    
+        Enemy.SetActive(true);
     }
-
-
-
 
     void UpdateLineRenderer()
     {
@@ -119,29 +124,111 @@ public class Recall : MonoBehaviour
         if (points.Count > 0)
         {
             StartCoroutine(ReverseMovement(points.Count - 1));
+
         }
     }
 
+
+    //正在回溯
     IEnumerator ReverseMovement(int currentPointIndex)
     {
+        BG1.GetComponent<Animator>().Play("1(1)");
         Time.timeScale = 2;
+        float h = ((int)CalculateLineRendererLength() / 3);
+        float[] distances = { 0, 2 * h}; // 需要生成敌人的距离值
+        int enemyCount = 0; // 计数器，用于跟踪生成的敌人数量
+
         while (currentPointIndex >= 0)
         {
+            if (!shakeCamera.enabled) {
+                shakeCamera.enabled = true;
+            }
+
             // 移动到轨迹的前一个点
             Player.transform.position = Vector3.MoveTowards(Player.transform.position, points[currentPointIndex], Player.MoveSpeed * Time.deltaTime);
+
+            float distanceToTarget = Vector3.Distance(Player.transform.position, target.position);
+
+            if (enemyCount < distances.Length) {
+
+                // 检查是否在特定距离生成敌人
+                if (distanceToTarget> distances[enemyCount])
+                {
+                    Instantiate(Enemy, points[currentPointIndex], Quaternion.identity);
+                    enemyCount++; // 生成敌人后，增加计数器
+                }
+            }
 
             // 如果到达了该点，继续倒退到下一个点
             if (Vector3.Distance(Player.transform.position, points[currentPointIndex]) < 0.01f)
             {
-                currentPointIndex --;
+                currentPointIndex--;
             }
 
             // 等待下一帧
             yield return null;
         }
 
-        timeState = TimeState.After ;
+        // 获取Volume Profile
+        VolumeProfile profile = volume.profile;
+        // 尝试获取Vignette效果
+        Vignette vignette;
+        if (profile.TryGet(out vignette))
+        {
+            Vector3 StartScale = Mask.localScale;
+            Vector3 EndScale = new Vector3(44, 44, 44);
+
+            // 激活Vignette效果并配置参数
+            vignette.active = true;
+
+            float EndIntensity = 1; // 你想要的最终强度值
+
+            // 设置初始强度和目标强度
+            float startIntensity = vignette.intensity.value;
+            float elapsedTime = 0f;
+            float duration = 3f; // 过渡时间
+
+            // 使用while循环逐渐增加Vignette强度和Mask的缩放比例
+            while (elapsedTime <= duration)
+            {
+                // 计算插值因子
+                float t = elapsedTime / duration;
+
+                // 线性插值调整Vignette强度
+                vignette.intensity.value = Mathf.Lerp(startIntensity, EndIntensity, t);
+
+                // 线性插值调整Mask的缩放比例
+                Mask.localScale = Vector3.Lerp(StartScale, EndScale, t);
+
+                // 增加经过的时间
+                elapsedTime += Time.deltaTime;
+
+                // 等待下一帧
+                yield return null;
+            }
+
+            // 确保最终值设置为目标强度和缩放比例
+            vignette.intensity.value = EndIntensity;
+            Mask.localScale = EndScale;
+        }
+
+        timeState = TimeState.After;
+
         Time.timeScale = 1;
+        BG1.SetActive(false);
+        if (shakeCamera.enabled)
+        {
+            shakeCamera.enabled = false;
+        }
+
+    }
+
+    float CalculateLineRendererLength()
+    {
+        Vector3 h = points[0] - points[points.Count - 1];
+        h.y = 0;
+        float length = h.magnitude;
+        return length;
     }
 
 }

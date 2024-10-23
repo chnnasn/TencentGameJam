@@ -33,7 +33,7 @@ public class CheckPhysics : MonoBehaviour
     public void UseGravity() {
 
         // 检测是否在地面上
-        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, Vector3.down, 0.01f + (float)(transform.localScale.y * 0.5), GroundedLayer);
+        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, Vector3.down, 0.01f + (float)(transform.localScale.y * 0.23), GroundedLayer);
         if (groundHit.collider != null)
         {
             Gravity.y = 0; // 重置垂直速度
@@ -42,9 +42,9 @@ public class CheckPhysics : MonoBehaviour
             // 获取射线起点到碰撞点之间的距离
             float distanceToGround = groundHit.distance;
 
-            if (distanceToGround < transform.localScale.y * 0.5)
+            if (distanceToGround < transform.localScale.y * 0.23f)
             {
-                float offset = (transform.localScale.y * 0.5f) - distanceToGround;
+                float offset = (transform.localScale.y * 0.23f) - distanceToGround;
                 transform.position += new Vector3(0, offset, 0);
             }
 
@@ -54,7 +54,7 @@ public class CheckPhysics : MonoBehaviour
             jump = JumpState.Falling;
         }
 
-            Debug.DrawRay(transform.position, Vector3.down * (0.01f + (float)(transform.localScale.y * 0.5)), Color.blue);
+            Debug.DrawRay(transform.position, Vector3.down * (0.01f + (float)(transform.localScale.y * 0.23)), Color.blue);
 
 
         // 应用重力
