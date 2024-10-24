@@ -130,8 +130,13 @@ public class Movement : CheckPhysics
             else
             {
                 int h = SceneManager.GetActiveScene().buildIndex + 1;
-                if (h <= 8) {
+                if (h < 8)
+                {
                     SceneManager.LoadScene(h);
+                }
+                else {
+
+                    Debug.Log("lll");
                 }
                
             }
