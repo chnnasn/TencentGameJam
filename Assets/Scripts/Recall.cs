@@ -30,6 +30,8 @@ public class Recall : MonoBehaviour
     [HideInInspector]
     public Transform Mask;
 
+    AudioSource audio;
+
     private void OnEnable()
     {
         if (instance != null)
@@ -50,6 +52,7 @@ public class Recall : MonoBehaviour
             lineRenderer.positionCount = 0; // 初始化点的数量
         }
 
+        audio = GetComponent<AudioSource>();
     }
 
     private void Awake()
@@ -128,6 +131,8 @@ public class Recall : MonoBehaviour
     //正在回溯
     IEnumerator ReverseMovement(int currentPointIndex)
     {
+        audio.Play();
+
         BG1.GetComponent<Animator>().Play("1(1)");
         Time.timeScale = 2;
         float h = ((int)CalculateLineRendererLength() / 3);
