@@ -12,7 +12,8 @@ public enum JumpState
 
 public class CheckPhysics : MonoBehaviour
 {
-    Vector3 Gravity;
+   protected  Vector3 Gravity;
+    //[HideInInspector]
     public JumpState jump;
     public float jumpHeight;
     // Start is called before the first frame update
@@ -68,7 +69,7 @@ public class CheckPhysics : MonoBehaviour
 
     }
 
-    public void PlayerJump()
+    public virtual void PlayerJump()
     {
         //ÌøÔ¾
         jump = JumpState.Jumping;

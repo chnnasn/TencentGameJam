@@ -2,9 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static PlayerTrail;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-
 public enum TimeState
 {
     Before,
@@ -15,6 +12,7 @@ public enum TimeState
 
 public class Recall : MonoBehaviour
 {
+    [HideInInspector]
     public TimeState timeState;
     public Movement Player;
     private LineRenderer lineRenderer;
@@ -29,8 +27,6 @@ public class Recall : MonoBehaviour
     public GameObject BG1;
     [HideInInspector]
     public ShakeCamera shakeCamera;
-    [HideInInspector]
-    public Volume volume;
     [HideInInspector]
     public Transform Mask;
 
@@ -169,57 +165,37 @@ public class Recall : MonoBehaviour
             yield return null;
         }
 
-        // 获取Volume Profile
-        VolumeProfile profile = volume.profile;
-        // 尝试获取Vignette效果
-        Vignette vignette;
-        if (profile.TryGet(out vignette))
+        Vector3 StartScale = Mask.localScale;
+        Vector3 EndScale = new Vector3(44, 44, 44);
+        float elapsedTime = 0f;
+        float duration = 3f; // 过渡时间
+
+        // 使用while循环逐渐增加Vignette强度和Mask的缩放比例
+        while (elapsedTime <= duration)
         {
-            Vector3 StartScale = Mask.localScale;
-            Vector3 EndScale = new Vector3(44, 44, 44);
+            // 计算插值因子
+            float t = elapsedTime / duration;
 
-            // 激活Vignette效果并配置参数
-            vignette.active = true;
+            // 线性插值调整Mask的缩放比例
+            Mask.localScale = Vector3.Lerp(StartScale, EndScale, t);
 
-            float EndIntensity = 1; // 你想要的最终强度值
+            // 增加经过的时间
+            elapsedTime += Time.deltaTime;
 
-            // 设置初始强度和目标强度
-            float startIntensity = vignette.intensity.value;
-            float elapsedTime = 0f;
-            float duration = 3f; // 过渡时间
-
-            // 使用while循环逐渐增加Vignette强度和Mask的缩放比例
-            while (elapsedTime <= duration)
-            {
-                // 计算插值因子
-                float t = elapsedTime / duration;
-
-                // 线性插值调整Vignette强度
-                vignette.intensity.value = Mathf.Lerp(startIntensity, EndIntensity, t);
-
-                // 线性插值调整Mask的缩放比例
-                Mask.localScale = Vector3.Lerp(StartScale, EndScale, t);
-
-                // 增加经过的时间
-                elapsedTime += Time.deltaTime;
-
-                // 等待下一帧
-                yield return null;
-            }
-
-            // 确保最终值设置为目标强度和缩放比例
-            vignette.intensity.value = EndIntensity;
-            Mask.localScale = EndScale;
+            // 等待下一帧
+            yield return null;
         }
 
-        timeState = TimeState.After;
+        Mask.localScale = EndScale;
 
-        Time.timeScale = 1;
+
         BG1.SetActive(false);
         if (shakeCamera.enabled)
         {
             shakeCamera.enabled = false;
         }
+        Time.timeScale = 1;
+        timeState = TimeState.After;
 
     }
 

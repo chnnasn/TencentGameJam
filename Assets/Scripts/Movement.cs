@@ -56,30 +56,53 @@ public class Movement : CheckPhysics
             {
                 sprite.flipX = MoveMent.x < 0;
 
-                if (!IsAnimationPlaying("Jump")) {
+                if (!IsAnimationPlaying("JumpIng") && !IsAnimation("Fall") && !IsAnimationPlaying("Ground")) {
 
                     Animator.Play("Walk");
                 }
 
-
                 transform.Translate(MoveMent * MoveSpeed * Time.deltaTime);
 
             }
-            else if(!IsAnimationPlaying("Jump"))
+            else if (!IsAnimationPlaying("JumpIng") && !IsAnimation("Fall") && !IsAnimationPlaying("Ground"))
             {
                 Animator.Play("Idie");
             }
+
+
         }
 
         // 按下空格键后，开始跳
         if (jump == JumpState.Grounded && Input.GetKeyDown(KeyCode.Space))
         {
-            Animator.Play("Jump");
+            Animator.Play("JumpIng");
 
-            base.PlayerJump();
+            PlayerJump();
+
+        }
+
+
+        // 检查是否超出摄像机的范围
+        if (IsOutOfCameraView())
+        {
+            // 执行相应的处理，比如重新加载场景
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
     }
+
+    private bool IsAnimation(string animationName)
+    {
+        AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.IsName(animationName);
+    }
+
+    bool IsOutOfCameraView()
+    {
+        Vector3 viewportPosition = Camera.main.WorldToViewportPoint(transform.position);
+        return viewportPosition.x < 0 || viewportPosition.x > 1 || viewportPosition.y < 0 || viewportPosition.y > 1;
+    }
+
 
     bool IsAnimationPlaying(string name)
     {
@@ -92,6 +115,7 @@ public class Movement : CheckPhysics
         if (Recall.instance.timeState != TimeState.Recall)
         {
             base.UseGravity();
+
         }
     }
 
@@ -118,4 +142,30 @@ public class Movement : CheckPhysics
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
+
+
+    // 重写PlayerJump方法
+    public override void PlayerJump()
+    {
+        // 自定义的跳跃实现
+        jump = JumpState.Jumping;
+        Gravity.y = Mathf.Sqrt(2 * jumpHeight * Mathf.Abs(Physics2D.gravity.y));
+        transform.Translate(Gravity * Time.deltaTime);
+
+        StartCoroutine(Fall());
+    }
+
+    IEnumerator Fall() {
+        while (true) {
+            if (jump == JumpState.Grounded)
+            {
+                Animator.Play("Ground");
+                break;
+            }
+            yield return null;
+        }
+
+
+    }
+
 }

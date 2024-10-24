@@ -58,7 +58,7 @@ public class EnemyFollow : MonoBehaviour
             {
                 transform.position = Vector3.MoveTowards(transform.position, trailPoints[pointIndex], moveSpeed * Time.deltaTime);
 
-                if (trailPoints[pointIndex].y > transform.position.x)
+                if (trailPoints[pointIndex].y > transform.position.y && !IsAnimationPlaying("Jump"))
                 {
                     animator.Play("Jump");
                 }
