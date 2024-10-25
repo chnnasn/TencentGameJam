@@ -5,7 +5,7 @@ using UnityEngine;
 public class StopUimanager : MonoBehaviour
 {
     public GameObject Stoppanel;
-    public bool isstop;
+     bool isstop;
     // Start is called before the first frame update
     void Start()
     {
@@ -16,27 +16,50 @@ public class StopUimanager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !isstop)
-        {
-           
-            Stopgame();
-        }
-        if (Input.GetKeyDown(KeyCode.Escape) && isstop)
-        {
-            Backgame();
+        //if (!isstop && Input.GetKeyDown(KeyCode.Escape))
+        //{
+
+        //    Stopgame();
+        //}
+
+        //if (isstop && Input.GetKeyDown(KeyCode.Escape) )
+        //{
+        //    Backgame();
+        //}
+
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            if (!isstop)
+            {
+                Stopgame();
+
+            }
+            else {
+                Backgame();
+            }
         }
     }
-    public void Stopgame()
+     void Stopgame()
     {
-        Debug.Log("stop");
         Stoppanel.SetActive(true);
-        Time.timeScale = 0;
         isstop = true;
+        Time.timeScale = 0;
+
     }
-    public void Backgame()
+     void Backgame()
     {
         Stoppanel.SetActive(false);
-        Time.timeScale = 1;
         isstop = false;
+        Time.timeScale = 1;
+
+    }
+
+    public void QuitGame() {
+
+        Application.Quit();
+    }
+
+    public void Continue() {
+
+        Backgame();
     }
 }

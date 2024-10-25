@@ -129,16 +129,18 @@ public class Movement : CheckPhysics
             }
             else
             {
-                int h = SceneManager.GetActiveScene().buildIndex + 1;
-                if (h < 8)
-                {
-                    SceneManager.LoadScene(h);
-                }
-                else {
+                int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+                int totalScenes = SceneManager.sceneCountInBuildSettings;
 
-                    Debug.Log("lll");
+                if (currentSceneIndex + 1 < totalScenes)
+                {
+                    SceneManager.LoadScene(currentSceneIndex + 1);
                 }
-               
+                else
+                {
+                    Debug.Log("kkk");
+                }
+
             }
         }
 

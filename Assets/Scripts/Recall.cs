@@ -30,7 +30,9 @@ public class Recall : MonoBehaviour
     [HideInInspector]
     public Transform Mask;
 
-    AudioSource audio;
+    new AudioSource audio;
+
+    GameObject hhh;
 
     private void OnEnable()
     {
@@ -53,6 +55,10 @@ public class Recall : MonoBehaviour
         }
 
         audio = GetComponent<AudioSource>();
+
+        hhh = GameObject.Find("HUISU");
+
+        hhh.SetActive(false);
     }
 
     private void Awake()
@@ -139,6 +145,8 @@ public class Recall : MonoBehaviour
         float[] distances = { 0, 2 * h}; // 需要生成敌人的距离值
         int enemyCount = 0; // 计数器，用于跟踪生成的敌人数量
 
+        hhh.SetActive(true);
+
         while (currentPointIndex >= 0)
         {
             if (!shakeCamera.enabled) {
@@ -169,6 +177,9 @@ public class Recall : MonoBehaviour
             // 等待下一帧
             yield return null;
         }
+
+
+        hhh.SetActive(false);
 
         Vector3 StartScale = Mask.localScale;
         Vector3 EndScale = new Vector3(44, 44, 44);

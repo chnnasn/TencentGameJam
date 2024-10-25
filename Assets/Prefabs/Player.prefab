@@ -164,6 +164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jump: 1
   jumpHeight: 2
+  GravityWeight: 1.2
   GroundedLayer:
     serializedVersion: 2
     m_Bits: 8
