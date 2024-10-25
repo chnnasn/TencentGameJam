@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4936105307387265839}
   - component: {fileID: 2798293930445104706}
+  - component: {fileID: 7766923414725599209}
   m_Layer: 0
   m_Name: Bgm
   m_TagString: Untagged
@@ -42,7 +43,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: c75122cfaaa3df442b9a1f28b2976ceb, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 60a994cc08e8fa94a810cc613d0a51dd, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -128,3 +129,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7766923414725599209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 58366181930492586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed72df356b5472a48b30478fb67ebce9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

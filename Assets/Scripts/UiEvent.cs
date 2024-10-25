@@ -38,7 +38,6 @@ public class UiEvent : MonoBehaviour, IPointerClickHandler
             if (transform.name == "End")
             {
 
-                Debug.Log("kkk");
                 Uimanager uimanager = GetComponent<Uimanager>();
 
                 uimanager.Lond();
